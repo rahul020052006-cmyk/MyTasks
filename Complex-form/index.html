@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Form & Hash Routing</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Hash-based View Containers -->
+  <main id="app">
+    
+    <!-- View 1: Form Section -->
+    <section id="signup" class="view">
+      <h2>Create an Account</h2>
+      
+      <!-- Form Progress Bar -->
+      <div class="progress-container">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+
+      <form id="registration-form" novalidate>
+        
+        <!-- Email Field -->
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" required>
+          <span class="error-msg" id="email-error"></span>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" required>
+          <div class="strength-meter">
+            <div id="strength-bar"></div>
+          </div>
+          <span id="strength-text" class="hint-text">Strength: Very Weak</span>
+        </div>
+
+        <!-- Confirm Password Field -->
+        <div class="form-group">
+          <label for="confirm-password">Confirm Password</label>
+          <input type="password" id="confirm-password" required>
+          <span class="error-msg" id="match-error"></span>
+        </div>
+
+        <!-- Conditional Field Trigger -->
+        <div class="form-group">
+          <label for="account-type">Account Type</label>
+          <select id="account-type">
+            <option value="personal">Personal</option>
+            <option value="business">Business</option>
+          </select>
+        </div>
+
+        <!-- Dynamic Conditional Field (Hidden by default) -->
+        <div class="form-group hidden" id="company-group">
+          <label for="company-name">Company Name</label>
+          <input type="text" id="company-name">
+          <span class="error-msg" id="company-error"></span>
+        </div>
+
+        <button type="submit" id="submit-btn" disabled>Complete Setup</button>
+      </form>
+    </section>
+
+    <!-- View 2: Dashboard Section -->
+    <section id="dashboard" class="view hidden">
+      <h2>Welcome to your Dashboard!</h2>
+      <p>You have successfully submitted the form and navigated without a page reload.</p>
+      <a href="#signup" class="btn-link">Back to Sign Up</a>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

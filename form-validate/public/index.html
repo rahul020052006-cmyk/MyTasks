@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Styling & Validation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="form-card">
+    <h2>Create Account</h2>
+    
+    <form id="registrationForm" novalidate>
+      <div class="form-group" id="group-username">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="johndoe">
+        <span class="error-message">Username must be at least 3 characters.</span>
+      </div>
+
+      <div class="form-group" id="group-email">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="john@example.com">
+        <span class="error-message">Please enter a valid email address.</span>
+      </div>
+
+      <div class="form-group" id="group-password">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••">
+        <span class="error-message">Password must be at least 6 characters.</span>
+      </div>
+
+      <div class="form-group" id="group-role">
+        <label for="role">Primary Role</label>
+        <select id="role" name="role">
+          <option value="">Select a role...</option>
+          <option value="developer">Developer</option>
+          <option value="designer">Designer</option>
+          <option value="manager">Manager</option>
+        </select>
+        <span class="error-message">Please select a role.</span>
+      </div>
+
+      <button type="submit">Submit</button>
+      <div id="feedback" class="server-feedback"></div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('registrationForm');
+    const feedbackDiv = document.getElementById('feedback');
+
+    // Helper functions for showing/clearing errors
+    function setError(fieldId, isError) {
+      const group = document.getElementById(`group-${fieldId}`);
+      if (isError) {
+        group.classList.add('invalid');
+      } else {
+        group.classList.remove('invalid');
+      }
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.form-group').forEach(group => group.classList.remove('invalid'));
+      feedbackDiv.className = 'server-feedback';
+      feedbackDiv.textContent = '';
+    }
+
+    // Client-side validation logic
+    function validateClientSide(data) {
+      let isValid = true;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!data.username || data.username.trim().length < 3) {
+        setError('username', true);
+        isValid = false;
+      } else {
+        setError('username', false);
+      }
+
+      if (!data.email || !emailRegex.test(data.email.trim())) {
+        setError('email', true);
+        isValid = false;
+      } else {
+        setError('email', false);
+      }
+
+      if (!data.password || data.password.length < 6) {
+        setError('password', true);
+        isValid = false;
+      } else {
+        setError('password', false);
+      }
+
+      if (!data.role) {
+        setError('role', true);
+        isValid = false;
+      } else {
+        setError('role', false);
+      }
+
+      return isValid;
+    }
+
+    // Form submit listener
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearErrors();
+
+      const formData = {
+        username: form.username.value,
+        email: form.email.value,
+        password: form.password.value,
+        role: form.role.value
+      };
+
+      // 1. Client-Side Check
+      const isClientValid = validateClientSide(formData);
+      if (!isClientValid) return;
+
+      // 2. Submit to Express backend for Server-Side Validation
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          feedbackDiv.classList.add('success');
+          feedbackDiv.textContent = result.message;
+          form.reset();
+        } else {
+          // Display server-side validation messages if any bypass client-side checks
+          feedbackDiv.classList.add('error');
+          feedbackDiv.textContent = result.errors ? result.errors[0].message : 'Submission failed.';
+          
+          if (result.errors) {
+            result.errors.forEach(err => setError(err.field, true));
+          }
+        }
+      } catch (err) {
+        feedbackDiv.classList.add('error');
+        feedbackDiv.textContent = 'Unable to reach the server. Try again later.';
+      }
+    });
+  </script>
+</body>
+</html>
