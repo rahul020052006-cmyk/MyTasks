@@ -7,13 +7,27 @@ exports.getProducts = (req, res) => {
 
 // POST
 exports.createProduct = (req, res) => {
-
     const { name, price } = req.body;
+
+    // Validate name and price input
+    if (
+        !name ||
+        typeof name !== "string" ||
+        name.trim() === "" ||
+        price === undefined ||
+        price === null ||
+        isNaN(Number(price)) ||
+        Number(price) <= 0
+    ) {
+        return res.status(400).json({
+            message: "Validation Error: Product name must be a non-empty string and price must be a positive number."
+        });
+    }
 
     const product = {
         id: Date.now(),
-        name,
-        price
+        name: name.trim(),
+        price: Number(price)
     };
 
     products.push(product);
@@ -23,10 +37,23 @@ exports.createProduct = (req, res) => {
 
 // PUT
 exports.updateProduct = (req, res) => {
-
     const id = Number(req.params.id);
-
     const { name, price } = req.body;
+
+    // Validate name and price input
+    if (
+        !name ||
+        typeof name !== "string" ||
+        name.trim() === "" ||
+        price === undefined ||
+        price === null ||
+        isNaN(Number(price)) ||
+        Number(price) <= 0
+    ) {
+        return res.status(400).json({
+            message: "Validation Error: Product name must be a non-empty string and price must be a positive number."
+        });
+    }
 
     const product = products.find((p) => p.id === id);
 
@@ -36,15 +63,14 @@ exports.updateProduct = (req, res) => {
         });
     }
 
-    product.name = name;
-    product.price = price;
+    product.name = name.trim();
+    product.price = Number(price);
 
     res.json(product);
 };
 
 // DELETE
 exports.deleteProduct = (req, res) => {
-
     const id = Number(req.params.id);
 
     const index = products.findIndex((p) => p.id === id);

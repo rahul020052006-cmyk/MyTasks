@@ -8,6 +8,30 @@ exports.signup = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
 
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Please fill all required fields",
+            });
+        }
+
+        // Validate and normalize role (Allowed: Admin, Student, Visitor; Default: Visitor)
+        const validRoles = ["Admin", "Student", "Visitor"];
+        let normalizedRole = "Visitor";
+
+        if (role) {
+            const matchedRole = validRoles.find(
+                (r) => r.toLowerCase() === role.trim().toLowerCase()
+            );
+            if (!matchedRole) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Invalid role. Allowed roles are: ${validRoles.join(", ")}`,
+                });
+            }
+            normalizedRole = matchedRole;
+        }
+
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
@@ -23,7 +47,7 @@ exports.signup = async (req, res) => {
             name,
             email,
             password: hashedPassword,
-            role,
+            role: normalizedRole,
         });
 
         return res.status(200).json({
@@ -80,6 +104,7 @@ exports.login = async (req, res) => {
             role: user.role,
         };
 
+        // JWT token expires in 2 hours
         const token = jwt.sign(
             payload,
             process.env.JWT_SECRET,
@@ -88,12 +113,17 @@ exports.login = async (req, res) => {
             }
         );
 
+        // Match cookie expiration to 2 hours (2 * 60 * 60 * 1000 ms)
         const options = {
             httpOnly: true,
             expires: new Date(
-                Date.now() + 3 * 24 * 60 * 60 * 1000
+                Date.now() + 2 * 60 * 60 * 1000
             ),
         };
+
+        // Remove hashed password from user object sent to client
+        const userResponse = user.toObject();
+        delete userResponse.password;
 
         return res
             .cookie("token", token, options)
@@ -101,10 +131,9 @@ exports.login = async (req, res) => {
             .json({
                 success: true,
                 token,
-                user,
+                user: userResponse,
                 message: "Login successful",
             });
-            
 
     } catch (error) {
         console.error(error);

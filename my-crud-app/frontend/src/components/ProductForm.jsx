@@ -26,9 +26,22 @@ function ProductForm({
 
         e.preventDefault();
 
+        // Validate product name
+        if (!name || name.trim() === "") {
+            alert("Please enter a valid product name.");
+            return;
+        }
+
+        // Validate product price
+        const numPrice = Number(price);
+        if (price === "" || isNaN(numPrice) || numPrice <= 0) {
+            alert("Please enter a valid positive price.");
+            return;
+        }
+
         const product = {
-            name,
-            price: Number(price)
+            name: name.trim(),
+            price: numPrice
         };
 
         if(editingProduct){
@@ -54,16 +67,20 @@ function ProductForm({
                 value={name}
                 placeholder="Product Name"
                 onChange={(e)=>setName(e.target.value)}
+                required
             />
 
             <input
                 type="number"
                 value={price}
                 placeholder="Price"
+                min="0.01"
+                step="any"
                 onChange={(e)=>setPrice(e.target.value)}
+                required
             />
 
-            <button>
+            <button type="submit">
                 {editingProduct ? "Update Product" : "Add Product"}
             </button>
 
